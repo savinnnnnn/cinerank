@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id            String   @id @default(cuid())
+  tmdbId        Int      @unique
+  title         String
+  originalTitle String
+  year          Int?
+  overview      String   @db.Text
+  posterPath    String?
+  backdropPath  String?
+  director      String?
+  cast          String[] @default([])
+  genres        String[] @default([])
+  runtime       Int?
+  trailerKey    String?
+  createdAt     DateTime @default(now())
+
+  ratings   Rating[]
+  listItems ListItem[]
+
+  @@index([title])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  score     Float
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId String
+
+  @@index([movieId])
+}
+
+model MovieList {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  items ListItem[]
+}
+
+model ListItem {
+  id        String   @id @default(cuid())
+  addedAt   DateTime @default(now())
+
+  list   MovieList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId String
+
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId String
+
+  @@unique([listId, movieId])
+}
