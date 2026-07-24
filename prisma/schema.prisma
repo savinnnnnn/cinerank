@@ -7,6 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  createdAt DateTime @default(now())
+
+  ratings Rating[]
+  lists   MovieList[]
+}
+
 model Movie {
   id            String   @id @default(cuid())
   tmdbId        Int      @unique
@@ -39,7 +48,14 @@ model Rating {
   movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
   movieId String
 
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Cada usuário só pode ter UMA avaliação por filme (dar uma nota nova
+  // no mesmo filme atualiza a avaliação existente, não cria outra).
+  @@unique([userId, movieId])
   @@index([movieId])
+  @@index([userId])
 }
 
 model MovieList {
@@ -48,11 +64,16 @@ model MovieList {
   createdAt DateTime @default(now())
 
   items ListItem[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId])
 }
 
 model ListItem {
-  id        String   @id @default(cuid())
-  addedAt   DateTime @default(now())
+  id      String   @id @default(cuid())
+  addedAt DateTime @default(now())
 
   list   MovieList @relation(fields: [listId], references: [id], onDelete: Cascade)
   listId String

@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { average } from "@/lib/utils";
+import { getCurrentUserId } from "@/lib/auth";
 
 export async function GET() {
   try {
+    const userId = await getCurrentUserId();
+    if (!userId) return NextResponse.json({ error: "Faça login." }, { status: 401 });
+
     const [ratings, listsCount] = await Promise.all([
       prisma.rating.findMany({
+        where: { userId },
         include: { movie: true },
         orderBy: { createdAt: "desc" },
       }),
-      prisma.movieList.count(),
+      prisma.movieList.count({ where: { userId } }),
     ]);
 
     const favorite = [...ratings].sort((a, b) => b.score - a.score)[0] ?? null;

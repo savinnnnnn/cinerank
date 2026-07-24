@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getMovieDetails } from "@/lib/tmdb";
 import { average } from "@/lib/utils";
+import { getCurrentUserId } from "@/lib/auth";
 import type { MovieWithStats } from "@/types";
 
 // Busca o filme no banco. Se ainda não existir, cria automaticamente
-// a partir dos dados da TMDb (essa é a regra central do produto:
-// nada é cadastrado manualmente).
+// a partir dos dados da TMDb. A nota média e o total de avaliações são
+// públicos (somam todos os usuários); "myRating" é só a do usuário logado.
 export async function GET(
   req: NextRequest,
   { params }: { params: { tmdbId: string } }
@@ -17,6 +18,8 @@ export async function GET(
   }
 
   try {
+    const userId = await getCurrentUserId();
+
     let movie = await prisma.movie.findUnique({
       where: { tmdbId },
       include: { ratings: true },
@@ -29,6 +32,8 @@ export async function GET(
         include: { ratings: true },
       });
     }
+
+    const myRatingRecord = userId ? movie.ratings.find((r) => r.userId === userId) ?? null : null;
 
     const response: MovieWithStats = {
       id: movie.id,
@@ -46,14 +51,13 @@ export async function GET(
       trailerKey: movie.trailerKey,
       averageScore: average(movie.ratings.map((r) => r.score)),
       ratingsCount: movie.ratings.length,
-      // Projeto pessoal, sem login: assume-se a avaliação mais recente como "minha avaliação".
-      myRating: movie.ratings[0]
+      myRating: myRatingRecord
         ? {
-            id: movie.ratings[0].id,
-            score: movie.ratings[0].score,
-            comment: movie.ratings[0].comment,
-            createdAt: movie.ratings[0].createdAt.toISOString(),
-            updatedAt: movie.ratings[0].updatedAt.toISOString(),
+            id: myRatingRecord.id,
+            score: myRatingRecord.score,
+            comment: myRatingRecord.comment,
+            createdAt: myRatingRecord.createdAt.toISOString(),
+            updatedAt: myRatingRecord.updatedAt.toISOString(),
           }
         : null,
     };

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getMovieDetails, posterUrl, backdropUrl } from "@/lib/tmdb";
 import { average } from "@/lib/utils";
+import { getCurrentUserId } from "@/lib/auth";
 import { RatingForm } from "@/components/RatingForm";
 import { AddToList } from "@/components/AddToList";
 import { Star, Clock, Calendar, Film } from "lucide-react";
@@ -30,10 +31,11 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
   if (Number.isNaN(tmdbId)) notFound();
 
   const movie = await getOrCreateMovie(tmdbId);
+  const userId = await getCurrentUserId();
   const avg = average(movie.ratings.map((r) => r.score));
   const poster = posterUrl(movie.posterPath, "w500");
   const backdrop = backdropUrl(movie.backdropPath);
-  const latestRating = movie.ratings[0] ?? null;
+  const myRating = movie.ratings.find((r) => r.userId === userId) ?? null;
 
   return (
     <div>
@@ -77,7 +79,7 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
               )}
               {movie.ratings.length > 0 && (
                 <span className="flex items-center gap-1.5 font-medium text-gold-400">
-                  <Star className="h-4 w-4 fill-gold-400" /> {avg.toFixed(1)} · {movie.ratings.length} avaliação
+                  <Star className="h-4 w-4 fill-gold-400" /> {avg.toFixed(1)} público · {movie.ratings.length} avaliação
                   {movie.ratings.length > 1 ? "ões" : ""}
                 </span>
               )}
@@ -130,13 +132,13 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
               <RatingForm
                 movieId={movie.id}
                 existing={
-                  latestRating
+                  myRating
                     ? {
-                        id: latestRating.id,
-                        score: latestRating.score,
-                        comment: latestRating.comment,
-                        createdAt: latestRating.createdAt.toISOString(),
-                        updatedAt: latestRating.updatedAt.toISOString(),
+                        id: myRating.id,
+                        score: myRating.score,
+                        comment: myRating.comment,
+                        createdAt: myRating.createdAt.toISOString(),
+                        updatedAt: myRating.updatedAt.toISOString(),
                       }
                     : null
                 }
