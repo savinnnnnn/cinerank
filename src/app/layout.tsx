@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CineRank — seu catálogo pessoal de filmes",
+  title: "FishCine — seu catálogo pessoal de filmes",
   description: "Avalie filmes de 0 a 10 e acompanhe seu ranking pessoal, atualizado automaticamente.",
 };
 
@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Header user={user ? { username: user.username } : null} />
             <main className="min-h-screen">{children}</main>
             <footer className="border-t border-base-800 py-10 mt-24 text-center text-sm text-base-500">
-              CineRank — catálogo pessoal de avaliações de filmes.
+              FishCine — catálogo pessoal de avaliações de filmes.
             </footer>
           </AuthGate>
         </ToastProvider>
