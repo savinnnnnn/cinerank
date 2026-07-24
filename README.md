@@ -1,8 +1,4 @@
-# CineRank
 
-Catálogo pessoal de filmes avaliados, com busca automática via TMDb, criação
-automática de páginas de filme, notas de 0 a 10 e ranking geral recalculado
-a cada avaliação.
 
 ## Stack
 
@@ -95,13 +91,7 @@ src/
 prisma/schema.prisma         → Modelo do banco de dados
 ```
 
-## Notas sobre o design
 
-Dark mode com paleta em carvão/dourado (em vez do dourado terracota
-genérico de gerador de IA), grão de filme sutil no fundo, e o próprio
-ranking usando o número da posição/medalha como assinatura visual —
-sem dashboards, sem gráficos administrativos, tudo pensado para parecer
-um produto real de catálogo de filmes.
 
 ## Próximos passos sugeridos (não incluídos, mas fáceis de adicionar)
 
